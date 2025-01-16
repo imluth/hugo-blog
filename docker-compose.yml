@@ -1,0 +1,28 @@
+name: hugo-blog
+
+services:
+  hugo-blog:
+    container_name: hugo-blog
+    image: hugo-blog:prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - traefik-public
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hugo-blog.rule=Host(`www.looth.io`)"
+      - "traefik.http.routers.hugo-blog.entrypoints=websecure"
+      - "traefik.http.routers.hugo-blog.tls.certresolver=leresolver"
+      - "traefik.http.services.hugo-blog.loadbalancer.server.port=80"
+
+networks:
+  traefik-public:
+    external: true
