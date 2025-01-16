@@ -23,7 +23,7 @@ services:
       - "traefik.http.routers.hugo-blog.entrypoints=websecure"
       - "traefik.http.routers.hugo-blog.tls.certresolver=leresolver"
       - "traefik.http.services.hugo-blog.loadbalancer.server.port=80"
-      # Redirect non-www to www
+      # Force Redirect non-www to www
       - "traefik.http.routers.hugo-blog-redirect.rule=Host(`looth.io`)"
       - "traefik.http.routers.hugo-blog-redirect.entrypoints=websecure"
       - "traefik.http.routers.hugo-blog-redirect.tls.certresolver=leresolver"
