@@ -29,7 +29,7 @@ services:
       - "traefik.http.routers.hugo-blog-redirect.tls.certresolver=leresolver"
       - "traefik.http.routers.hugo-blog-redirect.middlewares=redirect-to-www"
       - "traefik.http.middlewares.redirect-to-www.redirectregex.regex=^https://looth.io/(.*)"
-      - "traefik.http.middlewares.redirect-to-www.redirectregex.replacement=https://www.looth.io/${1}"
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.replacement=https://www.looth.io/$${1}"
       - "traefik.http.middlewares.redirect-to-www.redirectregex.permanent=true"
 
 networks:
