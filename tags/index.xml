@@ -2,31 +2,31 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Tags on @im_root</title>
-    <link>/tags/</link>
+    <link>https://looth.io/tags/</link>
     <description>Recent content in Tags on @im_root</description>
     <generator>Hugo -- 0.125.7</generator>
     <language>en-us</language>
     <lastBuildDate>Thu, 05 Oct 2023 12:00:00 +0000</lastBuildDate>
-    <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://looth.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Blog</title>
-      <link>/tags/blog/</link>
+      <link>https://looth.io/tags/blog/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>/tags/blog/</guid>
+      <guid>https://looth.io/tags/blog/</guid>
       <description></description>
     </item>
     <item>
       <title>Hugo</title>
-      <link>/tags/hugo/</link>
+      <link>https://looth.io/tags/hugo/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>/tags/hugo/</guid>
+      <guid>https://looth.io/tags/hugo/</guid>
       <description></description>
     </item>
     <item>
       <title>Sample</title>
-      <link>/tags/sample/</link>
+      <link>https://looth.io/tags/sample/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>/tags/sample/</guid>
+      <guid>https://looth.io/tags/sample/</guid>
       <description></description>
     </item>
   </channel>
