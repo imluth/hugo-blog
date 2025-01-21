@@ -15,7 +15,7 @@
       <guid>https://looth.io/posts/welcome-post/</guid>
       <description>Introduction I&amp;rsquo;m a System Administrator venturing into the world of DevOps, and this blog will document my learning journey. As someone who&amp;rsquo;s spent time managing traditional infrastructure, I&amp;rsquo;m excited to share my experiences as I explore modern DevOps practices and tools.
 What to Expect This blog will focus on practical tutorials and real-world examples covering:
-Container orchestration with Docker and Kubernetes Automation with Ansible CI/CD pipelines using Jenkins Version control with GitHub Infrastructure as Code Cloud platforms and services</description>
+Container orchestration with Docker and Kubernetes Automation with Ansible CI/CD pipelines using Jenkins Version control with GitHub Infrastructure as Code Cloud platforms and services I believe in learning by doing, so each post will include hands-on examples and practical implementations.</description>
     </item>
     <item>
       <title>About Me</title>
