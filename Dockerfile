@@ -3,11 +3,14 @@ FROM nginx:alpine-slim
 # Install curl for healthcheck
 RUN apk add --no-cache curl
 
-# Copy static files
-COPY . /usr/share/nginx/html/
-
-# Copy nginx configuration
+# Copy nginx configuration first (less likely to change)
 COPY nginx.conf /etc/nginx/nginx.conf
+
+# Add build argument for cache busting
+ARG CACHEBUST=1
+
+# Copy static files (content that changes frequently)
+COPY . /usr/share/nginx/html/
 
 # Create required directories and set permissions
 RUN mkdir -p /var/cache/nginx \
