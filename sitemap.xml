@@ -3,27 +3,45 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://looth.io/</loc>
-    <lastmod>2025-01-21T09:35:16+05:00</lastmod>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/posts/prod-ready-docker-lab/</loc>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://looth.io/categories/</loc>
-    <lastmod>2025-01-21T09:35:16+05:00</lastmod>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/cicd/</loc>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://looth.io/tags/devops/</loc>
-    <lastmod>2025-01-21T09:35:16+05:00</lastmod>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://looth.io/tags/learning/</loc>
-    <lastmod>2025-01-21T09:35:16+05:00</lastmod>
+    <loc>https://looth.io/categories/devops/</loc>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/docker/</loc>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/github/</loc>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/categories/infrastructure/</loc>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/portainer/</loc>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://looth.io/posts/</loc>
-    <lastmod>2025-01-21T09:35:16+05:00</lastmod>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://looth.io/tags/</loc>
-    <lastmod>2025-01-21T09:35:16+05:00</lastmod>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://looth.io/tags/verify/</loc>
-    <lastmod>2025-01-21T09:35:16+05:00</lastmod>
+    <loc>https://looth.io/tags/traefik/</loc>
+    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://looth.io/posts/verifying-public/</loc>
+    <loc>https://looth.io/tags/learning/</loc>
     <lastmod>2025-01-21T09:35:16+05:00</lastmod>
   </url><url>
     <loc>https://looth.io/categories/welcome/</loc>

@@ -6,8 +6,15 @@
     <description>Recent content in Tags on @im_root</description>
     <generator>Hugo -- 0.125.7</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 21 Jan 2025 09:35:16 +0500</lastBuildDate>
+    <lastBuildDate>Sun, 26 Jan 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://looth.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Cicd</title>
+      <link>https://looth.io/tags/cicd/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/tags/cicd/</guid>
+      <description></description>
+    </item>
     <item>
       <title>Devops</title>
       <link>https://looth.io/tags/devops/</link>
@@ -16,17 +23,38 @@
       <description></description>
     </item>
     <item>
+      <title>Docker</title>
+      <link>https://looth.io/tags/docker/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/tags/docker/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Github</title>
+      <link>https://looth.io/tags/github/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/tags/github/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Portainer</title>
+      <link>https://looth.io/tags/portainer/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/tags/portainer/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Traefik</title>
+      <link>https://looth.io/tags/traefik/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/tags/traefik/</guid>
+      <description></description>
+    </item>
+    <item>
       <title>Learning</title>
       <link>https://looth.io/tags/learning/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://looth.io/tags/learning/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Verify</title>
-      <link>https://looth.io/tags/verify/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://looth.io/tags/verify/</guid>
       <description></description>
     </item>
   </channel>
