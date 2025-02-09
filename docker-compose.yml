@@ -21,10 +21,17 @@ services:
       start_period: 5s
     labels:
       - "traefik.enable=true"
+      # HTTP to HTTPS redirect for both www and non-www
+      - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:(www\\.)?looth\\.io}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # Main HTTPS rules
       - "traefik.http.routers.hugo-blog.rule=Host(`www.looth.io`) || Host(`looth.io`)"
       - "traefik.http.routers.hugo-blog.entrypoints=websecure"
       - "traefik.http.routers.hugo-blog.tls.certresolver=leresolver"
       - "traefik.http.services.hugo-blog.loadbalancer.server.port=80"
+      # Redirect non-www to www for HTTPS
       - "traefik.http.routers.hugo-blog-redirect.rule=Host(`looth.io`)"
       - "traefik.http.routers.hugo-blog-redirect.entrypoints=websecure"
       - "traefik.http.routers.hugo-blog-redirect.tls.certresolver=leresolver"
