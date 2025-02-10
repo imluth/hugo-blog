@@ -21,10 +21,10 @@ services:
       start_period: 5s
     labels:
       - "traefik.enable=true"
-      # HTTP to HTTPS redirect for both www and non-www
-      - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:(www\\.)?looth\\.io}`)"
-      - "traefik.http.routers.http-catchall.entrypoints=web"
-      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      # HTTP to HTTPS redirect specifically for looth.io domains
+      - "traefik.http.routers.hugo-blog-http.rule=HostRegexp(`{host:(www\\.)?looth\\.io}`)"
+      - "traefik.http.routers.hugo-blog-http.entrypoints=web"
+      - "traefik.http.routers.hugo-blog-http.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       # Main HTTPS rules
       - "traefik.http.routers.hugo-blog.rule=Host(`www.looth.io`) || Host(`looth.io`)"
