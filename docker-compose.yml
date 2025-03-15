@@ -21,24 +21,21 @@ services:
       start_period: 5s
     labels:
       - "traefik.enable=true"
-      # HTTP to HTTPS redirect specifically for looth.io domains
-      - "traefik.http.routers.hugo-blog-http.rule=HostRegexp(`{host:(www\\.)?looth\\.io}`)"
-      - "traefik.http.routers.hugo-blog-http.entrypoints=web"
-      - "traefik.http.routers.hugo-blog-http.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      # Main HTTPS rules
-      - "traefik.http.routers.hugo-blog.rule=Host(`www.looth.io`) || Host(`looth.io`)"
+      # Main HTTPS rules for both www and non-www
+      - "traefik.http.routers.hugo-blog.rule=Host(`looth.io`) || Host(`www.looth.io`)"
       - "traefik.http.routers.hugo-blog.entrypoints=websecure"
       - "traefik.http.routers.hugo-blog.tls.certresolver=leresolver"
       - "traefik.http.services.hugo-blog.loadbalancer.server.port=80"
-      # Redirect non-www to www for HTTPS
-      - "traefik.http.routers.hugo-blog-redirect.rule=Host(`looth.io`)"
-      - "traefik.http.routers.hugo-blog-redirect.entrypoints=websecure"
-      - "traefik.http.routers.hugo-blog-redirect.tls.certresolver=leresolver"
-      - "traefik.http.routers.hugo-blog-redirect.middlewares=redirect-to-www"
-      - "traefik.http.middlewares.redirect-to-www.redirectregex.regex=^https://looth.io/(.*)"
-      - "traefik.http.middlewares.redirect-to-www.redirectregex.replacement=https://www.looth.io/$${1}"
-      - "traefik.http.middlewares.redirect-to-www.redirectregex.permanent=true"
+      
+      # Redirect www to non-www for HTTPS (reverse of your current config)
+      - "traefik.http.routers.hugo-blog-www-redirect.rule=Host(`www.looth.io`)"
+      - "traefik.http.routers.hugo-blog-www-redirect.entrypoints=websecure"
+      - "traefik.http.routers.hugo-blog-www-redirect.tls.certresolver=leresolver"
+      - "traefik.http.routers.hugo-blog-www-redirect.priority=100"
+      - "traefik.http.routers.hugo-blog-www-redirect.middlewares=www-to-non-www"
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https://www\\.looth\\.io/?(.*)"
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://looth.io/$${1}"
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
 
 networks:
   traefik-public:
