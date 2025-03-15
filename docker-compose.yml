@@ -21,13 +21,19 @@ services:
       start_period: 5s
     labels:
       - "traefik.enable=true"
+    
+    # HTTP routers to catch both domains and redirect to HTTPS
+      - "traefik.http.routers.hugo-blog-http.rule=Host(`looth.io`) || Host(`www.looth.io`)"
+      - "traefik.http.routers.hugo-blog-http.entrypoints=web"
+      - "traefik.http.routers.hugo-blog-http.middlewares=redirect-to-https@docker"
+      
       # Main HTTPS rules for both www and non-www
       - "traefik.http.routers.hugo-blog.rule=Host(`looth.io`) || Host(`www.looth.io`)"
       - "traefik.http.routers.hugo-blog.entrypoints=websecure"
       - "traefik.http.routers.hugo-blog.tls.certresolver=leresolver"
       - "traefik.http.services.hugo-blog.loadbalancer.server.port=80"
       
-      # Redirect www to non-www for HTTPS (reverse of your current config)
+      # Redirect www to non-www for HTTPS
       - "traefik.http.routers.hugo-blog-www-redirect.rule=Host(`www.looth.io`)"
       - "traefik.http.routers.hugo-blog-www-redirect.entrypoints=websecure"
       - "traefik.http.routers.hugo-blog-www-redirect.tls.certresolver=leresolver"
@@ -36,7 +42,7 @@ services:
       - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https://www\\.looth\\.io/?(.*)"
       - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://looth.io/$${1}"
       - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
-
+    
 networks:
   traefik-public:
     external: true
