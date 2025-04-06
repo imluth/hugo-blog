@@ -6,8 +6,15 @@
     <description>Recent content in Posts on @im_root</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 26 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 06 Apr 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://looth.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Building a Robust Docker Monitoring Stack</title>
+      <link>https://looth.io/posts/monitoring-stack-on-my-docker-lab/</link>
+      <pubDate>Sun, 06 Apr 2025 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/posts/monitoring-stack-on-my-docker-lab/</guid>
+      <description>A comprehensive guide to implementing a production-ready monitoring solution for Docker environments with Prometheus, Loki, and Grafana.</description>
+    </item>
     <item>
       <title>Building a Production-Ready Docker Environment with CI/CD Pipeline</title>
       <link>https://looth.io/posts/prod-ready-docker-lab/</link>

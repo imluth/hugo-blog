@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Building a Robust Docker Monitoring Stack | @im_root</title>
+<meta name="keywords" content="docker, devops, monitoring, prometheus, loki, grafana, traefik">
+<meta name="description" content="A comprehensive guide to implementing a production-ready monitoring solution for Docker environments with Prometheus, Loki, and Grafana.">
+<meta name="author" content="Looth">
+<link rel="canonical" href="https://looth.io/posts/monitoring-stack-on-my-docker-lab/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.45e028aa8ce0961349adf411b013ee39406be2c0bc80d4ea3fc04555f7f4611a.css" integrity="sha256-ReAoqozglhNJrfQRsBPuOUBr4sC8gNTqP8BFVff0YRo=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://looth.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://looth.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://looth.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://looth.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://looth.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://looth.io/posts/monitoring-stack-on-my-docker-lab/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:url" content="https://looth.io/posts/monitoring-stack-on-my-docker-lab/">
+  <meta property="og:site_name" content="@im_root">
+  <meta property="og:title" content="Building a Robust Docker Monitoring Stack">
+  <meta property="og:description" content="A comprehensive guide to implementing a production-ready monitoring solution for Docker environments with Prometheus, Loki, and Grafana.">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-04-06T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-04-06T00:00:00+00:00">
+    <meta property="article:tag" content="Docker">
+    <meta property="article:tag" content="Devops">
+    <meta property="article:tag" content="Monitoring">
+    <meta property="article:tag" content="Prometheus">
+    <meta property="article:tag" content="Loki">
+    <meta property="article:tag" content="Grafana">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Building a Robust Docker Monitoring Stack">
+<meta name="twitter:description" content="A comprehensive guide to implementing a production-ready monitoring solution for Docker environments with Prometheus, Loki, and Grafana.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://looth.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Building a Robust Docker Monitoring Stack",
+      "item": "https://looth.io/posts/monitoring-stack-on-my-docker-lab/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Building a Robust Docker Monitoring Stack",
+  "name": "Building a Robust Docker Monitoring Stack",
+  "description": "A comprehensive guide to implementing a production-ready monitoring solution for Docker environments with Prometheus, Loki, and Grafana.",
+  "keywords": [
+    "docker", "devops", "monitoring", "prometheus", "loki", "grafana", "traefik"
+  ],
+  "articleBody": "Building a Robust Docker Monitoring Stack for Production As a DevOps engineer managing containerized environments, I’ve learned that proper observability isn’t just nice to have—it’s essential for maintaining system reliability and quickly resolving issues. After experimenting with various tools and configurations in my Docker lab, I’ve developed a comprehensive monitoring stack that I’m now deploying in production environments.\nIn this post, I’ll walk through my approach to building a complete monitoring solution for Docker environments using industry-standard tools and production-ready best practices.\nThe Monitoring Stack Architecture My monitoring solution combines metrics and logs collection into a unified observability platform. Here’s what we’ll be implementing:\nMetrics Collection \u0026 Storage\nPrometheus (time-series database) Node Exporter (host-level metrics) cAdvisor (container-level metrics) Log Aggregation\nLoki (log storage and querying) Promtail (log collector) Visualization\nGrafana (unified dashboard) Security \u0026 Access\nTraefik (reverse proxy with TLS) Basic authentication Prerequisites Before getting started, you’ll need:\nDocker and Docker Compose installed A server running Linux (I’m using Linode) A domain with DNS configured Traefik already set up as a reverse proxy with SSL support Implementation Details Docker Compose Configuration Let’s start with our complete docker-compose.yml configuration. This is the backbone of our monitoring stack:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 version: \"3.3\" services: prometheus: image: prom/prometheus:v2.48.1 container_name: prometheus restart: unless-stopped volumes: - ./prometheus:/etc/prometheus - prometheus_data:/prometheus command: - '--config.file=/etc/prometheus/prometheus.yml' - '--storage.tsdb.path=/prometheus' - '--web.console.libraries=/etc/prometheus/console_libraries' - '--web.console.templates=/etc/prometheus/consoles' - '--web.enable-lifecycle' deploy: resources: limits: cpus: '0.50' memory: 1G networks: - traefik-public - monitoring labels: - \"traefik.enable=true\" - \"traefik.docker.network=traefik-public\" - \"traefik.http.routers.prometheus.rule=Host(`prometheus.looth.io`)\" - \"traefik.http.routers.prometheus.entrypoints=websecure\" - \"traefik.http.routers.prometheus.tls.certresolver=leresolver\" - \"traefik.http.services.prometheus.loadbalancer.server.port=9090\" # Basic auth middleware - \"traefik.http.routers.prometheus.middlewares=prometheus-auth\" - \"traefik.http.middlewares.prometheus-auth.basicauth.users=admin:\" node-exporter: image: prom/node-exporter:v1.7.0 container_name: node-exporter restart: unless-stopped volumes: - /proc:/host/proc:ro - /sys:/host/sys:ro - /:/rootfs:ro command: - '--path.procfs=/host/proc' - '--path.rootfs=/rootfs' - '--path.sysfs=/host/sys' - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)' deploy: resources: limits: cpus: '0.10' memory: 128M networks: - monitoring expose: - 9100 cadvisor: image: gcr.io/cadvisor/cadvisor:v0.47.2 container_name: cadvisor restart: unless-stopped volumes: - /:/rootfs:ro - /var/run:/var/run:ro - /sys:/sys:ro - /var/lib/docker/:/var/lib/docker:ro - /dev/disk/:/dev/disk:ro deploy: resources: limits: cpus: '0.25' memory: 256M networks: - monitoring expose: - 8080 grafana: image: grafana/grafana:10.2.3 container_name: grafana restart: unless-stopped environment: - GF_SECURITY_ADMIN_USER=admin - GF_SECURITY_ADMIN_PASSWORD=secure_password_here - GF_USERS_ALLOW_SIGN_UP=false - GF_SERVER_ROOT_URL=https://grafana.looth.io volumes: - grafana_data:/var/lib/grafana deploy: resources: limits: cpus: '0.50' memory: 512M networks: - traefik-public - monitoring depends_on: - prometheus labels: - \"traefik.enable=true\" - \"traefik.docker.network=traefik-public\" - \"traefik.http.routers.grafana.rule=Host(`grafana.looth.io`)\" - \"traefik.http.routers.grafana.entrypoints=websecure\" - \"traefik.http.routers.grafana.tls.certresolver=leresolver\" - \"traefik.http.services.grafana.loadbalancer.server.port=3000\" loki: image: grafana/loki:2.9.5 container_name: loki restart: unless-stopped user: \"0:0\" # Run as root user to avoid permission issues volumes: - ./loki:/etc/loki - ./loki-data:/loki # Use bind mount instead of named volume command: -config.file=/etc/loki/loki-config.yaml deploy: resources: limits: cpus: '0.50' memory: 512M networks: - traefik-public - monitoring labels: - \"traefik.enable=true\" - \"traefik.docker.network=traefik-public\" - \"traefik.http.routers.loki.rule=Host(`loki.looth.io`)\" - \"traefik.http.routers.loki.entrypoints=websecure\" - \"traefik.http.routers.loki.tls.certresolver=leresolver\" - \"traefik.http.services.loki.loadbalancer.server.port=3100\" - \"traefik.http.routers.loki.middlewares=loki-auth\" - \"traefik.http.middlewares.loki-auth.basicauth.users=admin:\" promtail: image: grafana/promtail:2.9.5 container_name: promtail restart: unless-stopped user: \"0:0\" # Run as root to avoid permission issues volumes: - ./promtail:/etc/promtail - /var/log:/var/log:ro - /var/lib/docker/containers:/var/lib/docker/containers:ro - /var/run/docker.sock:/var/run/docker.sock:ro command: -config.file=/etc/promtail/promtail-config.yaml deploy: resources: limits: cpus: '0.25' memory: 256M networks: - monitoring depends_on: - loki networks: traefik-public: external: true monitoring: driver: bridge volumes: prometheus_data: grafana_data: Essential Configuration Files Let’s look at the configuration for each component of our monitoring stack.\nPrometheus Configuration Create a prometheus.yml file in the ./prometheus directory:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 global: scrape_interval: 15s evaluation_interval: 15s scrape_configs: - job_name: 'prometheus' static_configs: - targets: ['localhost:9090'] - job_name: 'node-exporter' static_configs: - targets: ['node-exporter:9100'] - job_name: 'cadvisor' static_configs: - targets: ['cadvisor:8080'] # Add scrape configs for your other services here - job_name: 'traefik' static_configs: - targets: ['traefik:8080'] - job_name: 'docker' static_configs: - targets: ['cadvisor:8080'] Loki Configuration Create a loki-config.yaml file in the ./loki directory:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 auth_enabled: false server: http_listen_port: 3100 ingester: lifecycler: address: 127.0.0.1 ring: kvstore: store: inmemory replication_factor: 1 final_sleep: 0s chunk_idle_period: 5m chunk_retain_period: 30s schema_config: configs: - from: 2020-01-01 store: boltdb-shipper object_store: filesystem schema: v11 index: prefix: index_ period: 24h storage_config: boltdb_shipper: active_index_directory: /loki/boltdb-shipper-active cache_location: /loki/boltdb-shipper-cache cache_ttl: 24h shared_store: filesystem filesystem: directory: /loki/chunks limits_config: enforce_metric_name: false reject_old_samples: true reject_old_samples_max_age: 168h Promtail Configuration Create a promtail-config.yaml file in the ./promtail directory:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 server: http_listen_port: 9080 positions: filename: /etc/promtail/positions.yaml clients: - url: http://loki:3100/loki/api/v1/push scrape_configs: - job_name: docker static_configs: - targets: - localhost labels: job: docker __path__: /var/lib/docker/containers/*/*.log pipeline_stages: - docker: {} - labeldrop: - filename - stream Production-Ready Best Practices Throughout my testing and implementation, I’ve incorporated several production-ready practices that make this monitoring stack reliable and secure:\n1. Resource Management One of the most critical aspects of running a monitoring stack in production is proper resource management. I’ve learned from experience that without explicit limits, monitoring tools can sometimes consume excessive resources and impact the performance of your production services:\n1 2 3 4 5 deploy: resources: limits: cpus: '0.50' memory: 512M These limits prevent any single component from consuming too many resources and potentially bringing down the entire host. The values are based on my observations of typical resource usage in production environments.\n2. Network Segmentation The stack uses two separate networks:\ntraefik-public: An external network used for components that need to be publicly accessible through Traefik monitoring: An internal bridge network for components to communicate securely This approach follows the principle of least privilege by only exposing the necessary services, keeping the attack surface as small as possible.\n3. Data Persistence Both Prometheus and Grafana use named volumes to ensure data persistence across container restarts or upgrades:\n1 2 3 volumes: prometheus_data: grafana_data: For Loki, I’ve chosen a bind mount approach to make the data easier to back up and manage:\n1 2 volumes: - ./loki-data:/loki This strategy ensures you won’t lose historical metrics or dashboard configurations during maintenance or updates.\n4. Security Measures Several security practices are implemented in this stack:\nTLS Encryption: All public endpoints use HTTPS via Traefik’s Let’s Encrypt integration Basic Authentication: Sensitive dashboards (Prometheus, Loki) use basic auth to prevent unauthorized access Read-Only Mounts: All volume mounts use read-only access where possible Limited User Sign-up: Grafana is configured to prevent unauthorized user registration These measures ensure that your monitoring data remains secure and accessible only to authorized personnel.\n5. Container Best Practices Other Docker-specific best practices used throughout this stack:\nNamed Containers: Makes it easier to reference them in logs and commands Fixed Versions: Using specific image versions instead of latest for reproducibility Health Checks: Services implement health checks for better orchestration Restart Policies: All services are configured to restart automatically if they crash Setting Up Grafana Dashboards Once your stack is running, you’ll need to set up dashboards in Grafana for visualization.\n1. Add Data Sources First, add both Prometheus and Loki as data sources in Grafana:\nPrometheus:\nURL: http://prometheus:9090 Access: Server (default) Loki:\nURL: http://loki:3100 Access: Server (default) 2. Import Dashboard Templates Grafana has many pre-built dashboards you can import. Here are some recommended dashboard IDs that I’ve found particularly useful in production:\nNode Exporter Full: 1860 Docker Containers: 893 Traefik: 11462 3. Create a Custom Logs Dashboard For container logs, create a custom dashboard with these panels:\nAll Container Logs\nQuery: {container=~\".+\"} Error Logs Across All Containers\nQuery: {container=~\".+\"} |= \"error\" or {container=~\".+\"} |= \"ERROR\" Logs by Container (using a variable)\nDashboard variable query: label_values(container) Panel query: {container=\"$container\"} Log Volume Over Time\nFor monitoring spikes in logging activity Here are some useful LogQL queries I frequently use in production:\n# All logs for a specific container {container=\"traefik\"} # Filter by HTTP status codes (for web services) {container=\"traefik\"} |~ \"HTTP/1.1\\\\\" (4|5)\\\\d\\\\d\" # Find error messages {container=~\".+\"} |= \"error\" or {container=~\".+\"} |= \"ERROR\" # Find warnings {container=~\".+\"} |= \"WARN\" or {container=~\".+\"} |= \"WARNING\" Alerting and Notification While not covered in this basic setup, you can extend this monitoring stack with alerting capabilities:\nUse Prometheus AlertManager for metrics-based alerts Configure Grafana alerting for both logs and metrics Set up notification channels (email, Slack, PagerDuty, etc.) I’ll cover my alerting setup in a future post, as it deserves its own dedicated walkthrough.\nConclusion After several iterations in my lab environment, this monitoring stack has proven itself ready for production use. It provides complete visibility into containerized applications through both metrics and logs, all while following DevOps best practices for security, resource management, and data persistence.\nThe beauty of this approach is its modularity—you can easily extend it with additional exporters, dashboards, or integrations as your monitoring needs evolve.\nBy combining Prometheus, Loki, and Grafana, you get a powerful monitoring solution that helps ensure the reliability and performance of your applications while making troubleshooting much more straightforward.\nNext Steps Based on my testing and production deployment, here are some future improvements I’m planning to implement:\nSetting up AlertManager for automated alerts based on resource thresholds Adding specialized exporters for MySQL, PostgreSQL, and Redis Implementing distributed tracing with Tempo to complement metrics and logs Exploring long-term storage solutions for metrics and logs retention Feel free to adapt this setup to your specific needs or reach out if you have any questions about implementing this in your own Docker environment!\n",
+  "wordCount" : "1695",
+  "inLanguage": "en",
+  "datePublished": "2025-04-06T00:00:00Z",
+  "dateModified": "2025-04-06T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "Looth"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://looth.io/posts/monitoring-stack-on-my-docker-lab/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "@im_root",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://looth.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://looth.io/" accesskey="h" title="@im_root (Alt + H)">@im_root</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://looth.io/about/" title="About">
+                    <span>About</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://looth.io/posts/" title="Posts">
+                    <span>Posts</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://looth.io/categories/" title="Categories">
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://looth.io/search/" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://looth.io/archives/" title="Archives">
+                    <span>Archives</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://looth.io/">Home</a>&nbsp;»&nbsp;<a href="https://looth.io/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Building a Robust Docker Monitoring Stack
+    </h1>
+    <div class="post-description">
+      A comprehensive guide to implementing a production-ready monitoring solution for Docker environments with Prometheus, Loki, and Grafana.
+    </div>
+    <div class="post-meta"><span title='2025-04-06 00:00:00 +0000 UTC'>April 6, 2025</span>&nbsp;·&nbsp;8 min&nbsp;·&nbsp;1695 words&nbsp;·&nbsp;Looth
+
+</div>
+  </header> 
+  <div class="post-content"><h1 id="building-a-robust-docker-monitoring-stack-for-production">Building a Robust Docker Monitoring Stack for Production<a hidden class="anchor" aria-hidden="true" href="#building-a-robust-docker-monitoring-stack-for-production">#</a></h1>
+<p><img alt="Grafana Overview" loading="lazy" src="/img/grafana-main.png"></p>
+<p>As a DevOps engineer managing containerized environments, I&rsquo;ve learned that proper observability isn&rsquo;t just nice to have—it&rsquo;s essential for maintaining system reliability and quickly resolving issues. After experimenting with various tools and configurations in my Docker lab, I&rsquo;ve developed a comprehensive monitoring stack that I&rsquo;m now deploying in production environments.</p>
+<p>In this post, I&rsquo;ll walk through my approach to building a complete monitoring solution for Docker environments using industry-standard tools and production-ready best practices.</p>
+<h2 id="the-monitoring-stack-architecture">The Monitoring Stack Architecture<a hidden class="anchor" aria-hidden="true" href="#the-monitoring-stack-architecture">#</a></h2>
+<p><img alt="Monitoring Stack Overview" loading="lazy" src="/img/monitoring-stack-overview.png"></p>
+<p>My monitoring solution combines metrics and logs collection into a unified observability platform. Here&rsquo;s what we&rsquo;ll be implementing:</p>
+<ol>
+<li>
+<p><strong>Metrics Collection &amp; Storage</strong></p>
+<ul>
+<li>Prometheus (time-series database)</li>
+<li>Node Exporter (host-level metrics)</li>
+<li>cAdvisor (container-level metrics)</li>
+</ul>
+</li>
+<li>
+<p><strong>Log Aggregation</strong></p>
+<ul>
+<li>Loki (log storage and querying)</li>
+<li>Promtail (log collector)</li>
+</ul>
+</li>
+<li>
+<p><strong>Visualization</strong></p>
+<ul>
+<li>Grafana (unified dashboard)</li>
+</ul>
+</li>
+<li>
+<p><strong>Security &amp; Access</strong></p>
+<ul>
+<li>Traefik (reverse proxy with TLS)</li>
+<li>Basic authentication</li>
+</ul>
+</li>
+</ol>
+<h2 id="prerequisites">Prerequisites<a hidden class="anchor" aria-hidden="true" href="#prerequisites">#</a></h2>
+<p>Before getting started, you&rsquo;ll need:</p>
+<ul>
+<li>Docker and Docker Compose installed</li>
+<li>A server running Linux (I&rsquo;m using Linode)</li>
+<li>A domain with DNS configured</li>
+<li>Traefik already set up as a reverse proxy with SSL support</li>
+</ul>
+<h2 id="implementation-details">Implementation Details<a hidden class="anchor" aria-hidden="true" href="#implementation-details">#</a></h2>
+<h3 id="docker-compose-configuration">Docker Compose Configuration<a hidden class="anchor" aria-hidden="true" href="#docker-compose-configuration">#</a></h3>
+<p>Let&rsquo;s start with our complete <code>docker-compose.yml</code> configuration. This is the backbone of our monitoring stack:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;3.3&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">prometheus</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">prom/prometheus:v2.48.1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">prometheus</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">unless-stopped</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./prometheus:/etc/prometheus</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">prometheus_data:/prometheus</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s1">&#39;--config.file=/etc/prometheus/prometheus.yml&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s1">&#39;--storage.tsdb.path=/prometheus&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s1">&#39;--web.console.libraries=/etc/prometheus/console_libraries&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s1">&#39;--web.console.templates=/etc/prometheus/consoles&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s1">&#39;--web.enable-lifecycle&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">deploy</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">resources</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">limits</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;0.50&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l">1G</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">traefik-public</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">monitoring</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.enable=true&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.docker.network=traefik-public&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.routers.prometheus.rule=Host(`prometheus.looth.io`)&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.routers.prometheus.entrypoints=websecure&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.routers.prometheus.tls.certresolver=leresolver&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.services.prometheus.loadbalancer.server.port=9090&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c"># Basic auth middleware</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.routers.prometheus.middlewares=prometheus-auth&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.middlewares.prometheus-auth.basicauth.users=admin:&lt;encryptedpassword&gt;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">node-exporter</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">prom/node-exporter:v1.7.0</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">node-exporter</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">unless-stopped</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/proc:/host/proc:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/sys:/host/sys:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/:/rootfs:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s1">&#39;--path.procfs=/host/proc&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s1">&#39;--path.rootfs=/rootfs&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s1">&#39;--path.sysfs=/host/sys&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s1">&#39;--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">deploy</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">resources</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">limits</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;0.10&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l">128M</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">monitoring</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">expose</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="m">9100</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">cadvisor</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">gcr.io/cadvisor/cadvisor:v0.47.2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">cadvisor</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">unless-stopped</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/:/rootfs:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/var/run:/var/run:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/sys:/sys:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/var/lib/docker/:/var/lib/docker:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/dev/disk/:/dev/disk:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">deploy</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">resources</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">limits</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;0.25&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l">256M</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">monitoring</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">expose</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="m">8080</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">grafana</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">grafana/grafana:10.2.3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">grafana</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">unless-stopped</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GF_SECURITY_ADMIN_USER=admin</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GF_SECURITY_ADMIN_PASSWORD=secure_password_here</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GF_USERS_ALLOW_SIGN_UP=false</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GF_SERVER_ROOT_URL=https://grafana.looth.io</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">grafana_data:/var/lib/grafana</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">deploy</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">resources</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">limits</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;0.50&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l">512M</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">traefik-public</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">monitoring</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">prometheus</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.enable=true&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.docker.network=traefik-public&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.routers.grafana.rule=Host(`grafana.looth.io`)&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.routers.grafana.entrypoints=websecure&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.routers.grafana.tls.certresolver=leresolver&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.services.grafana.loadbalancer.server.port=3000&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">loki</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">grafana/loki:2.9.5</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">loki</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">unless-stopped</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;0:0&#34;</span><span class="w">  </span><span class="c"># Run as root user to avoid permission issues</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./loki:/etc/loki</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./loki-data:/loki </span><span class="w"> </span><span class="c"># Use bind mount instead of named volume</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span>-<span class="l">config.file=/etc/loki/loki-config.yaml</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">deploy</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">resources</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">limits</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;0.50&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l">512M</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">traefik-public</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">monitoring</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.enable=true&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.docker.network=traefik-public&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.routers.loki.rule=Host(`loki.looth.io`)&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.routers.loki.entrypoints=websecure&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.routers.loki.tls.certresolver=leresolver&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.services.loki.loadbalancer.server.port=3100&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.routers.loki.middlewares=loki-auth&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;traefik.http.middlewares.loki-auth.basicauth.users=admin:&lt;encryptedpassword&gt;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">promtail</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">grafana/promtail:2.9.5</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">promtail</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">unless-stopped</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;0:0&#34;</span><span class="w">  </span><span class="c"># Run as root to avoid permission issues</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./promtail:/etc/promtail</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/var/log:/var/log:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/var/lib/docker/containers:/var/lib/docker/containers:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/var/run/docker.sock:/var/run/docker.sock:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span>-<span class="l">config.file=/etc/promtail/promtail-config.yaml</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">deploy</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">resources</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">limits</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;0.25&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l">256M</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">monitoring</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">loki</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">traefik-public</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">external</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">monitoring</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">driver</span><span class="p">:</span><span class="w"> </span><span class="l">bridge</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">prometheus_data</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">grafana_data</span><span class="p">:</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="essential-configuration-files">Essential Configuration Files<a hidden class="anchor" aria-hidden="true" href="#essential-configuration-files">#</a></h3>
+<p>Let&rsquo;s look at the configuration for each component of our monitoring stack.</p>
+<h4 id="prometheus-configuration">Prometheus Configuration<a hidden class="anchor" aria-hidden="true" href="#prometheus-configuration">#</a></h4>
+<p>Create a <code>prometheus.yml</code> file in the <code>./prometheus</code> directory:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">global</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">scrape_interval</span><span class="p">:</span><span class="w"> </span><span class="l">15s</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">evaluation_interval</span><span class="p">:</span><span class="w"> </span><span class="l">15s</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">scrape_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;prometheus&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">static_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;localhost:9090&#39;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;node-exporter&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">static_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;node-exporter:9100&#39;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;cadvisor&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">static_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;cadvisor:8080&#39;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c"># Add scrape configs for your other services here</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;traefik&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">static_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;traefik:8080&#39;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;docker&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">static_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;cadvisor:8080&#39;</span><span class="p">]</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="loki-configuration">Loki Configuration<a hidden class="anchor" aria-hidden="true" href="#loki-configuration">#</a></h4>
+<p>Create a <code>loki-config.yaml</code> file in the <code>./loki</code> directory:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">auth_enabled</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">server</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">http_listen_port</span><span class="p">:</span><span class="w"> </span><span class="m">3100</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">ingester</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">lifecycler</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="m">127.0.0.1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ring</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">kvstore</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">store</span><span class="p">:</span><span class="w"> </span><span class="l">inmemory</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">replication_factor</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">final_sleep</span><span class="p">:</span><span class="w"> </span><span class="l">0s</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">chunk_idle_period</span><span class="p">:</span><span class="w"> </span><span class="l">5m</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">chunk_retain_period</span><span class="p">:</span><span class="w"> </span><span class="l">30s</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">schema_config</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="ld">2020-01-01</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">store</span><span class="p">:</span><span class="w"> </span><span class="l">boltdb-shipper</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">object_store</span><span class="p">:</span><span class="w"> </span><span class="l">filesystem</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">schema</span><span class="p">:</span><span class="w"> </span><span class="l">v11</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">index</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l">index_</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l">24h</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">storage_config</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">boltdb_shipper</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">active_index_directory</span><span class="p">:</span><span class="w"> </span><span class="l">/loki/boltdb-shipper-active</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">cache_location</span><span class="p">:</span><span class="w"> </span><span class="l">/loki/boltdb-shipper-cache</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">cache_ttl</span><span class="p">:</span><span class="w"> </span><span class="l">24h</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">shared_store</span><span class="p">:</span><span class="w"> </span><span class="l">filesystem</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">filesystem</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">directory</span><span class="p">:</span><span class="w"> </span><span class="l">/loki/chunks</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">limits_config</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">enforce_metric_name</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">reject_old_samples</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">reject_old_samples_max_age</span><span class="p">:</span><span class="w"> </span><span class="l">168h</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="promtail-configuration">Promtail Configuration<a hidden class="anchor" aria-hidden="true" href="#promtail-configuration">#</a></h4>
+<p>Create a <code>promtail-config.yaml</code> file in the <code>./promtail</code> directory:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">server</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">http_listen_port</span><span class="p">:</span><span class="w"> </span><span class="m">9080</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">positions</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">filename</span><span class="p">:</span><span class="w"> </span><span class="l">/etc/promtail/positions.yaml</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">clients</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l">http://loki:3100/loki/api/v1/push</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">scrape_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="l">docker</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">static_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">targets</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span>- <span class="l">localhost</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">job</span><span class="p">:</span><span class="w"> </span><span class="l">docker</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">__path__</span><span class="p">:</span><span class="w"> </span><span class="l">/var/lib/docker/containers/*/*.log</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">pipeline_stages</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">docker</span><span class="p">:</span><span class="w"> </span>{}<span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">labeldrop</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span>- <span class="l">filename</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span>- <span class="l">stream</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="production-ready-best-practices">Production-Ready Best Practices<a hidden class="anchor" aria-hidden="true" href="#production-ready-best-practices">#</a></h2>
+<p>Throughout my testing and implementation, I&rsquo;ve incorporated several production-ready practices that make this monitoring stack reliable and secure:</p>
+<h3 id="1-resource-management">1. Resource Management<a hidden class="anchor" aria-hidden="true" href="#1-resource-management">#</a></h3>
+<p>One of the most critical aspects of running a monitoring stack in production is proper resource management. I&rsquo;ve learned from experience that without explicit limits, monitoring tools can sometimes consume excessive resources and impact the performance of your production services:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">deploy</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">resources</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">limits</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;0.50&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l">512M</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>These limits prevent any single component from consuming too many resources and potentially bringing down the entire host. The values are based on my observations of typical resource usage in production environments.</p>
+<h3 id="2-network-segmentation">2. Network Segmentation<a hidden class="anchor" aria-hidden="true" href="#2-network-segmentation">#</a></h3>
+<p>The stack uses two separate networks:</p>
+<ul>
+<li><code>traefik-public</code>: An external network used for components that need to be publicly accessible through Traefik</li>
+<li><code>monitoring</code>: An internal bridge network for components to communicate securely</li>
+</ul>
+<p>This approach follows the principle of least privilege by only exposing the necessary services, keeping the attack surface as small as possible.</p>
+<h3 id="3-data-persistence">3. Data Persistence<a hidden class="anchor" aria-hidden="true" href="#3-data-persistence">#</a></h3>
+<p>Both Prometheus and Grafana use named volumes to ensure data persistence across container restarts or upgrades:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">prometheus_data</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">grafana_data</span><span class="p">:</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>For Loki, I&rsquo;ve chosen a bind mount approach to make the data easier to back up and manage:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="l">./loki-data:/loki</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>This strategy ensures you won&rsquo;t lose historical metrics or dashboard configurations during maintenance or updates.</p>
+<h3 id="4-security-measures">4. Security Measures<a hidden class="anchor" aria-hidden="true" href="#4-security-measures">#</a></h3>
+<p>Several security practices are implemented in this stack:</p>
+<ul>
+<li><strong>TLS Encryption</strong>: All public endpoints use HTTPS via Traefik&rsquo;s Let&rsquo;s Encrypt integration</li>
+<li><strong>Basic Authentication</strong>: Sensitive dashboards (Prometheus, Loki) use basic auth to prevent unauthorized access</li>
+<li><strong>Read-Only Mounts</strong>: All volume mounts use read-only access where possible</li>
+<li><strong>Limited User Sign-up</strong>: Grafana is configured to prevent unauthorized user registration</li>
+</ul>
+<p>These measures ensure that your monitoring data remains secure and accessible only to authorized personnel.</p>
+<h3 id="5-container-best-practices">5. Container Best Practices<a hidden class="anchor" aria-hidden="true" href="#5-container-best-practices">#</a></h3>
+<p>Other Docker-specific best practices used throughout this stack:</p>
+<ul>
+<li><strong>Named Containers</strong>: Makes it easier to reference them in logs and commands</li>
+<li><strong>Fixed Versions</strong>: Using specific image versions instead of <code>latest</code> for reproducibility</li>
+<li><strong>Health Checks</strong>: Services implement health checks for better orchestration</li>
+<li><strong>Restart Policies</strong>: All services are configured to restart automatically if they crash</li>
+</ul>
+<h2 id="setting-up-grafana-dashboards">Setting Up Grafana Dashboards<a hidden class="anchor" aria-hidden="true" href="#setting-up-grafana-dashboards">#</a></h2>
+<p>Once your stack is running, you&rsquo;ll need to set up dashboards in Grafana for visualization.</p>
+<p><img alt="Grafana Data Sources" loading="lazy" src="/img/grafana-data-source.png"></p>
+<h3 id="1-add-data-sources">1. Add Data Sources<a hidden class="anchor" aria-hidden="true" href="#1-add-data-sources">#</a></h3>
+<p>First, add both Prometheus and Loki as data sources in Grafana:</p>
+<ul>
+<li>
+<p><strong>Prometheus</strong>:</p>
+<ul>
+<li>URL: <code>http://prometheus:9090</code></li>
+<li>Access: Server (default)</li>
+</ul>
+</li>
+<li>
+<p><strong>Loki</strong>:</p>
+<ul>
+<li>URL: <code>http://loki:3100</code></li>
+<li>Access: Server (default)</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-import-dashboard-templates">2. Import Dashboard Templates<a hidden class="anchor" aria-hidden="true" href="#2-import-dashboard-templates">#</a></h3>
+<p>Grafana has many pre-built dashboards you can import. Here are some recommended dashboard IDs that I&rsquo;ve found particularly useful in production:</p>
+<ul>
+<li>Node Exporter Full: 1860</li>
+<li>Docker Containers: 893</li>
+<li>Traefik: 11462</li>
+</ul>
+<p><img alt="Grafana Node Exporter" loading="lazy" src="/img/grafana-overview-node-exporter.png"></p>
+<p><img alt="Grafana Docker Containers Dashboard" loading="lazy" src="/img/grafana-container.png"></p>
+<h3 id="3-create-a-custom-logs-dashboard">3. Create a Custom Logs Dashboard<a hidden class="anchor" aria-hidden="true" href="#3-create-a-custom-logs-dashboard">#</a></h3>
+<p>For container logs, create a custom dashboard with these panels:</p>
+<ol>
+<li>
+<p><strong>All Container Logs</strong></p>
+<ul>
+<li>Query: <code>{container=~&quot;.+&quot;}</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Error Logs Across All Containers</strong></p>
+<ul>
+<li>Query: <code>{container=~&quot;.+&quot;} |= &quot;error&quot; or {container=~&quot;.+&quot;} |= &quot;ERROR&quot;</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Logs by Container</strong> (using a variable)</p>
+<ul>
+<li>Dashboard variable query: <code>label_values(container)</code></li>
+<li>Panel query: <code>{container=&quot;$container&quot;}</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Log Volume Over Time</strong></p>
+<ul>
+<li>For monitoring spikes in logging activity</li>
+</ul>
+</li>
+</ol>
+<p><img alt="Loki Dashboard" loading="lazy" src="/img/grafana-loki.png"></p>
+<p>Here are some useful LogQL queries I frequently use in production:</p>
+<pre tabindex="0"><code># All logs for a specific container
+{container=&#34;traefik&#34;}
+
+# Filter by HTTP status codes (for web services)
+{container=&#34;traefik&#34;} |~ &#34;HTTP/1.1\\&#34; (4|5)\\d\\d&#34;
+
+# Find error messages
+{container=~&#34;.+&#34;} |= &#34;error&#34; or {container=~&#34;.+&#34;} |= &#34;ERROR&#34; 
+
+# Find warnings
+{container=~&#34;.+&#34;} |= &#34;WARN&#34; or {container=~&#34;.+&#34;} |= &#34;WARNING&#34;
+</code></pre><h2 id="alerting-and-notification">Alerting and Notification<a hidden class="anchor" aria-hidden="true" href="#alerting-and-notification">#</a></h2>
+<p>While not covered in this basic setup, you can extend this monitoring stack with alerting capabilities:</p>
+<p><img alt="Grafana Alerts" loading="lazy" src="/img/grafana-alerting.png"></p>
+<ol>
+<li>Use Prometheus AlertManager for metrics-based alerts</li>
+<li>Configure Grafana alerting for both logs and metrics</li>
+<li>Set up notification channels (email, Slack, PagerDuty, etc.)</li>
+</ol>
+<p>I&rsquo;ll cover my alerting setup in a future post, as it deserves its own dedicated walkthrough.</p>
+<h2 id="conclusion">Conclusion<a hidden class="anchor" aria-hidden="true" href="#conclusion">#</a></h2>
+<p>After several iterations in my lab environment, this monitoring stack has proven itself ready for production use. It provides complete visibility into containerized applications through both metrics and logs, all while following DevOps best practices for security, resource management, and data persistence.</p>
+<p><img alt="Grafana Dash" loading="lazy" src="/img/grafana-dash1.png"></p>
+<p><img alt="Grafana Dash" loading="lazy" src="/img/grafana-dash2.png"></p>
+<p>The beauty of this approach is its modularity—you can easily extend it with additional exporters, dashboards, or integrations as your monitoring needs evolve.</p>
+<p>By combining Prometheus, Loki, and Grafana, you get a powerful monitoring solution that helps ensure the reliability and performance of your applications while making troubleshooting much more straightforward.</p>
+<h2 id="next-steps">Next Steps<a hidden class="anchor" aria-hidden="true" href="#next-steps">#</a></h2>
+<p>Based on my testing and production deployment, here are some future improvements I&rsquo;m planning to implement:</p>
+<ul>
+<li>Setting up AlertManager for automated alerts based on resource thresholds</li>
+<li>Adding specialized exporters for MySQL, PostgreSQL, and Redis</li>
+<li>Implementing distributed tracing with Tempo to complement metrics and logs</li>
+<li>Exploring long-term storage solutions for metrics and logs retention</li>
+</ul>
+<p>Feel free to adapt this setup to your specific needs or reach out if you have any questions about implementing this in your own Docker environment!</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://looth.io/tags/docker/">Docker</a></li>
+      <li><a href="https://looth.io/tags/devops/">Devops</a></li>
+      <li><a href="https://looth.io/tags/monitoring/">Monitoring</a></li>
+      <li><a href="https://looth.io/tags/prometheus/">Prometheus</a></li>
+      <li><a href="https://looth.io/tags/loki/">Loki</a></li>
+      <li><a href="https://looth.io/tags/grafana/">Grafana</a></li>
+      <li><a href="https://looth.io/tags/traefik/">Traefik</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="https://looth.io/posts/prod-ready-docker-lab/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Building a Production-Ready Docker Environment with CI/CD Pipeline</span>
+  </a>
+</nav>
+
+
+<ul class="share-buttons">
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Building a Robust Docker Monitoring Stack on x"
+            href="https://x.com/intent/tweet/?text=Building%20a%20Robust%20Docker%20Monitoring%20Stack&amp;url=https%3a%2f%2flooth.io%2fposts%2fmonitoring-stack-on-my-docker-lab%2f&amp;hashtags=docker%2cdevops%2cmonitoring%2cprometheus%2cloki%2cgrafana%2ctraefik">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Building a Robust Docker Monitoring Stack on linkedin"
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2flooth.io%2fposts%2fmonitoring-stack-on-my-docker-lab%2f&amp;title=Building%20a%20Robust%20Docker%20Monitoring%20Stack&amp;summary=Building%20a%20Robust%20Docker%20Monitoring%20Stack&amp;source=https%3a%2f%2flooth.io%2fposts%2fmonitoring-stack-on-my-docker-lab%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Building a Robust Docker Monitoring Stack on reddit"
+            href="https://reddit.com/submit?url=https%3a%2f%2flooth.io%2fposts%2fmonitoring-stack-on-my-docker-lab%2f&title=Building%20a%20Robust%20Docker%20Monitoring%20Stack">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Building a Robust Docker Monitoring Stack on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2flooth.io%2fposts%2fmonitoring-stack-on-my-docker-lab%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Building a Robust Docker Monitoring Stack on whatsapp"
+            href="https://api.whatsapp.com/send?text=Building%20a%20Robust%20Docker%20Monitoring%20Stack%20-%20https%3a%2f%2flooth.io%2fposts%2fmonitoring-stack-on-my-docker-lab%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Building a Robust Docker Monitoring Stack on telegram"
+            href="https://telegram.me/share/url?text=Building%20a%20Robust%20Docker%20Monitoring%20Stack&amp;url=https%3a%2f%2flooth.io%2fposts%2fmonitoring-stack-on-my-docker-lab%2f">
+            <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Building a Robust Docker Monitoring Stack on ycombinator"
+            href="https://news.ycombinator.com/submitlink?t=Building%20a%20Robust%20Docker%20Monitoring%20Stack&u=https%3a%2f%2flooth.io%2fposts%2fmonitoring-stack-on-my-docker-lab%2f">
+            <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
+                xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                <path
+                    d="M449.446 0C483.971 0 512 28.03 512 62.554L512 449.446C512 483.97 483.97 512 449.446 512L62.554 512C28.03 512 0 483.97 0 449.446L0 62.554C0 28.03 28.029 0 62.554 0L449.446 0ZM183.8767 87.9921H121.8427L230.6673 292.4508V424.0079H281.3328V292.4508L390.1575 87.9921H328.1233L256 238.2489z" />
+            </svg>
+        </a>
+    </li>
+</ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="https://looth.io/">@im_root</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

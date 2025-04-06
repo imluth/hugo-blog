@@ -3,24 +3,51 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://looth.io/</loc>
-    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/posts/monitoring-stack-on-my-docker-lab/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/categories/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/devops/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/categories/devops/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/docker/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/grafana/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/loki/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/categories/monitoring/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/monitoring/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/posts/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/prometheus/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/traefik/</loc>
+    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://looth.io/posts/prod-ready-docker-lab/</loc>
     <lastmod>2025-01-26T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://looth.io/categories/</loc>
-    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://looth.io/tags/cicd/</loc>
-    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://looth.io/tags/devops/</loc>
-    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://looth.io/categories/devops/</loc>
-    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://looth.io/tags/docker/</loc>
     <lastmod>2025-01-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://looth.io/tags/github/</loc>
@@ -30,15 +57,6 @@
     <lastmod>2025-01-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://looth.io/tags/portainer/</loc>
-    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://looth.io/posts/</loc>
-    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://looth.io/tags/</loc>
-    <lastmod>2025-01-26T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://looth.io/tags/traefik/</loc>
     <lastmod>2025-01-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://looth.io/tags/learning/</loc>

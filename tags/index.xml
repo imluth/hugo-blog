@@ -6,27 +6,62 @@
     <description>Recent content in Tags on @im_root</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 26 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 06 Apr 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://looth.io/tags/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Cicd</title>
-      <link>https://looth.io/tags/cicd/</link>
-      <pubDate>Sun, 26 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>https://looth.io/tags/cicd/</guid>
-      <description></description>
-    </item>
     <item>
       <title>Devops</title>
       <link>https://looth.io/tags/devops/</link>
-      <pubDate>Sun, 26 Jan 2025 00:00:00 +0000</pubDate>
+      <pubDate>Sun, 06 Apr 2025 00:00:00 +0000</pubDate>
       <guid>https://looth.io/tags/devops/</guid>
       <description></description>
     </item>
     <item>
       <title>Docker</title>
       <link>https://looth.io/tags/docker/</link>
-      <pubDate>Sun, 26 Jan 2025 00:00:00 +0000</pubDate>
+      <pubDate>Sun, 06 Apr 2025 00:00:00 +0000</pubDate>
       <guid>https://looth.io/tags/docker/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Grafana</title>
+      <link>https://looth.io/tags/grafana/</link>
+      <pubDate>Sun, 06 Apr 2025 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/tags/grafana/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Loki</title>
+      <link>https://looth.io/tags/loki/</link>
+      <pubDate>Sun, 06 Apr 2025 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/tags/loki/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Monitoring</title>
+      <link>https://looth.io/tags/monitoring/</link>
+      <pubDate>Sun, 06 Apr 2025 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/tags/monitoring/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Prometheus</title>
+      <link>https://looth.io/tags/prometheus/</link>
+      <pubDate>Sun, 06 Apr 2025 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/tags/prometheus/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Traefik</title>
+      <link>https://looth.io/tags/traefik/</link>
+      <pubDate>Sun, 06 Apr 2025 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/tags/traefik/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Cicd</title>
+      <link>https://looth.io/tags/cicd/</link>
+      <pubDate>Sun, 26 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/tags/cicd/</guid>
       <description></description>
     </item>
     <item>
@@ -41,13 +76,6 @@
       <link>https://looth.io/tags/portainer/</link>
       <pubDate>Sun, 26 Jan 2025 00:00:00 +0000</pubDate>
       <guid>https://looth.io/tags/portainer/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Traefik</title>
-      <link>https://looth.io/tags/traefik/</link>
-      <pubDate>Sun, 26 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>https://looth.io/tags/traefik/</guid>
       <description></description>
     </item>
     <item>
