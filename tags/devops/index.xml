@@ -6,8 +6,15 @@
     <description>Recent content in Devops on @im_root</description>
     <generator>Hugo -- 0.140.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 06 Apr 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 14 May 2026 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://looth.io/tags/devops/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Building a Single-Node K3s Homelab on a LattePanda Alpha</title>
+      <link>https://looth.io/posts/k3s-homelab-base-setup/</link>
+      <pubDate>Thu, 14 May 2026 00:00:00 +0000</pubDate>
+      <guid>https://looth.io/posts/k3s-homelab-base-setup/</guid>
+      <description>How I turned a LattePanda Alpha into a fully GitOps-managed Kubernetes homelab using K3s, ArgoCD, Prometheus, Grafana, and Cloudflare Tunnel — without opening a single port on my router.</description>
+    </item>
     <item>
       <title>Building a Robust Docker Monitoring Stack</title>
       <link>https://looth.io/posts/monitoring-stack-on-my-docker-lab/</link>

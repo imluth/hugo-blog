@@ -3,24 +3,60 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://looth.io/</loc>
-    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/argocd/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/posts/k3s-homelab-base-setup/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/categories/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/cloudflare/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/devops/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/categories/devops/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/gitops/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/grafana/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/homelab/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/categories/homelab/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/k3s/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/kubernetes/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/categories/kubernetes/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/posts/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/prometheus/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://looth.io/tags/</loc>
+    <lastmod>2026-05-14T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://looth.io/posts/monitoring-stack-on-my-docker-lab/</loc>
     <lastmod>2025-04-06T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://looth.io/categories/</loc>
-    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://looth.io/tags/devops/</loc>
-    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://looth.io/categories/devops/</loc>
-    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://looth.io/tags/docker/</loc>
-    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://looth.io/tags/grafana/</loc>
     <lastmod>2025-04-06T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://looth.io/tags/loki/</loc>
@@ -30,15 +66,6 @@
     <lastmod>2025-04-06T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://looth.io/categories/monitoring/</loc>
-    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://looth.io/posts/</loc>
-    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://looth.io/tags/prometheus/</loc>
-    <lastmod>2025-04-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://looth.io/tags/</loc>
     <lastmod>2025-04-06T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://looth.io/tags/traefik/</loc>
